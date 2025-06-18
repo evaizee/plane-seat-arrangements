@@ -45,8 +45,8 @@ The project is divided into two main parts:
 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/seat-arrangements.git
-cd seat-arrangements
+git clone https://github.com/evaizee/plane-seat-arrangements.git
+cd plane-seat-arrangements
 ```
 
 2. Start the application using Docker Compose

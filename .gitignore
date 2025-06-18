@@ -16,7 +16,7 @@
 *.test
 *.out
 go.work
-backend\config\config.yaml
+backend/config/config.yaml
 
 # Dependency directories (Go)
 vendor/
