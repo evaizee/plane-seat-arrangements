@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # Migration service
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: seat-arrangements-migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_NAME=seat_arrangements
+      - DATABASE_SSLMODE=disable
+      - WAIT_FOR_DB=true
+      # Map environment variables to Viper config keys
+      - CONFIG_PATH=/app/config
+      - MIGRATIONS_PATH=/app/migrations
+    networks:
+      - seat-arrangements-network
+    entrypoint: ["/bin/sh"]
+    command: ["/app/run-migrations.sh"]
+    volumes:
+      - ./backend/db/migrations:/app/migrations
+    profiles: ["migrate"]
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:16-alpine
+    container_name: seat-arrangements-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: seat_arrangements
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - seat-arrangements-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Backend service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: seat-arrangements-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_NAME=seat_arrangements
+      - DATABASE_SSLMODE=disable
+    ports:
+      - "8080:8080"
+    networks:
+      - seat-arrangements-network
+    volumes:
+      - ./backend:/app/src
+      - ./backend/db/migrations:/app/migrations
+      - ./backend/config:/app/config
+    command: ["serve"]
+
+  # Frontend service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: seat-arrangements-frontend
+    ports:
+      - "5173:80"
+    networks:
+      - seat-arrangements-network
+    depends_on:
+      - backend
+
+networks:
+  seat-arrangements-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

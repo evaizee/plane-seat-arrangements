@@ -1,0 +1,32 @@
+# Server configuration
+server:
+  host: 0.0.0.0
+  port: 8080
+
+# Database configuration
+database:
+  host: postgres
+  port: 5432
+  user: postgres
+  password: postgres
+  dbname: seat_arrangements
+  sslmode: disable
+  max_open_conns: 25
+  max_idle_conns: 25
+  conn_max_lifetime: 5m
+
+# CORS configuration
+cors:
+  origins: "*"
+
+# JWT configuration
+jwt:
+  secret: "your-secret-key-change-in-production"
+  expiration: 24h # 24 hours
+
+# Development mode
+development: true
+
+# Logging configuration
+logging:
+  level: debug # debug, info, warn, error, dpanic, panic, fatal
